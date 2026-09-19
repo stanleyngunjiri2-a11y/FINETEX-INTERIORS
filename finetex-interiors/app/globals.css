@@ -1,0 +1,218 @@
+@import "tailwindcss";
+
+/* =========================================================
+   FINETEX INTERIORS - GLOBAL DESIGN TOKENS
+   ========================================================= */
+
+:root {
+  --background: #f7f5f0;
+  --foreground: #1b1b1b;
+
+  --surface: #ffffff;
+  --surface-dark: #171717;
+
+  --muted: #6b6b6b;
+  --muted-light: #888888;
+
+  --border: #e5e1d9;
+  --border-dark: #d8d1c6;
+
+  --accent: #b18a5a;
+  --accent-light: #d0a76a;
+  --accent-dark: #8e6c43;
+
+  --container-width: 1200px;
+}
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background: var(--background);
+  color: var(--foreground);
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  text-rendering: optimizeLegibility;
+}
+
+/* =========================================================
+   ELEMENT DEFAULTS
+   ========================================================= */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+input,
+textarea,
+select {
+  outline: none;
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+::selection {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Skip focus outline for mouse users while keeping
+   keyboard accessibility intact */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.container {
+  width: min(100% - 2rem, var(--container-width));
+  margin-inline: auto;
+}
+
+.section {
+  padding-block: 5rem;
+}
+
+/* =========================================================
+   RESPONSIVE LAYOUT
+   ========================================================= */
+
+@media (min-width: 640px) {
+  .container {
+    width: min(100% - 3rem, var(--container-width));
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: min(100% - 4rem, var(--container-width));
+  }
+
+  .section {
+    padding-block: 7rem;
+  }
+}
+
+/* =========================================================
+   LARGE SCREENS
+   ========================================================= */
+
+@media (min-width: 1280px) {
+  .container {
+    width: min(100% - 5rem, var(--container-width));
+  }
+}
+
+/* =========================================================
+   MOBILE TOUCH IMPROVEMENTS
+   ========================================================= */
+
+@media (max-width: 767px) {
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   GLOBAL LINK & BUTTON COLOR FIX
+   Prevents global styles from overriding Tailwind colors
+   ========================================================= */
+
+a {
+  color: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+/* Dark primary buttons */
+a.bg-\[\#171717\],
+button.bg-\[\#171717\] {
+  color: #ffffff !important;
+}
+
+/* Gold primary buttons */
+a.bg-\[\#b18a5a\],
+button.bg-\[\#b18a5a\] {
+  color: #ffffff !important;
+}
+
+/* Gold hover states */
+a.hover\:bg-\[\#b18a5a\]:hover,
+button.hover\:bg-\[\#b18a5a\]:hover {
+  color: #ffffff !important;
+}
