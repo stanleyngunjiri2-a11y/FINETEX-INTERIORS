@@ -93,7 +93,7 @@ export default function Header() {
           ====================================================== */}
           <div className="hidden lg:block">
             <a
-              href="tel:+254768176570"
+              href="tel:+254725408173"
               className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200"
               style={{
                 backgroundColor: "#171717",
@@ -101,7 +101,7 @@ export default function Header() {
               }}
             >
               <Phone size={16} />
-              <span>0768 176 570</span>
+              <span>0725 408 173</span>
             </a>
           </div>
 
@@ -167,7 +167,7 @@ export default function Header() {
                 MOBILE PHONE
             ================================================== */}
             <a
-              href="tel:+254768176570"
+              href="tel:+254725408173"
               className="mt-4 flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold"
               style={{
                 backgroundColor: "#171717",
@@ -175,14 +175,14 @@ export default function Header() {
               }}
             >
               <Phone size={17} />
-              <span>Call 0768 176 570</span>
+              <span>Call 0725 408 173</span>
             </a>
 
             {/* =================================================
                 MOBILE WHATSAPP
             ================================================== */}
             <a
-              href="https://wa.me/254768176570"
+              href="https://wa.me/254725408173"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 flex items-center justify-center rounded-full border px-5 py-3.5 text-sm font-semibold"

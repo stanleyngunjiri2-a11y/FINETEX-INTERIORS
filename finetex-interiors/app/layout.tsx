@@ -110,7 +110,7 @@ const structuredData = {
 
   url: "https://finetexinteriors.com",
 
-  telephone: "+254768176570",
+  telephone: "+254725408173",
 
   image: "https://finetexinteriors.com/images/finetex-logo.png",
 

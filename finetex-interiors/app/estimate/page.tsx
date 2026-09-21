@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type FormData = {
   service: string;
@@ -11,6 +12,17 @@ type FormData = {
   name: string;
   phone: string;
   preferredContact: string;
+};
+
+const initialForm: FormData = {
+  service: "",
+  location: "",
+  property: "",
+  budget: "",
+  description: "",
+  name: "",
+  phone: "",
+  preferredContact: "WhatsApp",
 };
 
 const services = [
@@ -42,156 +54,95 @@ const properties = [
 
 const budgets = [
   "Below KSh 100,000",
-  "KSh 100,000 – 250,000",
-  "KSh 250,000 – 500,000",
-  "KSh 500,000 – 1,000,000",
+  "KSh 100,000–250,000",
+  "KSh 250,000–500,000",
+  "KSh 500,000–1,000,000",
   "Above KSh 1,000,000",
   "Not sure yet",
 ];
 
-const initialForm: FormData = {
-  service: "",
-  location: "",
-  property: "",
-  budget: "",
-  description: "",
-  name: "",
-  phone: "",
-  preferredContact: "WhatsApp",
-};
-
 export default function EstimatePage() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(initialForm);
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const totalSteps = 4;
-
-  const progress = useMemo(() => {
-    return (step / totalSteps) * 100;
-  }, [step]);
-
-  const updateForm = (
-    field: keyof FormData,
-    value: string
-  ) => {
-    setForm((previous) => ({
-      ...previous,
+  const updateForm = (field: keyof FormData, value: string) => {
+    setForm((current) => ({
+      ...current,
       [field]: value,
     }));
+  };
 
+  const goToNextStep = () => {
     setError("");
-  };
 
-  const handlePhotoUpload = (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = Array.from(event.target.files || []);
-
-    const imageFiles = files.filter((file) =>
-      file.type.startsWith("image/")
-    );
-
-    const limitedFiles = imageFiles.slice(0, 6);
-
-    setPhotos(limitedFiles);
-
-    const previews = limitedFiles.map((file) =>
-      URL.createObjectURL(file)
-    );
-
-    setPhotoPreviews(previews);
-    setError("");
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotos((previous) =>
-      previous.filter((_, photoIndex) => photoIndex !== index)
-    );
-
-    setPhotoPreviews((previous) =>
-      previous.filter((_, photoIndex) => photoIndex !== index)
-    );
-  };
-
-  const validateStep = () => {
     if (step === 1 && !form.service) {
       setError("Please select a service.");
-      return false;
+      return;
     }
 
-    if (step === 2) {
-      if (!form.location) {
-        setError("Please select your location.");
-        return false;
-      }
-
-      if (!form.property) {
-        setError("Please select the property type.");
-        return false;
-      }
-
-      if (!form.budget) {
-        setError("Please select your estimated budget.");
-        return false;
-      }
+    if (
+      step === 2 &&
+      (!form.location || !form.property || !form.budget)
+    ) {
+      setError("Please complete all project details.");
+      return;
     }
 
-    if (step === 4) {
-      if (!form.name.trim()) {
-        setError("Please enter your name.");
-        return false;
-      }
+    setStep((current) => Math.min(current + 1, 3));
+  };
 
-      if (!form.phone.trim()) {
-        setError("Please enter your phone number.");
-        return false;
-      }
-    }
-
+  const goToPreviousStep = () => {
     setError("");
-    return true;
+    setStep((current) => Math.max(current - 1, 1));
   };
 
-  const nextStep = () => {
-    if (!validateStep()) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.service ||
+      !form.location ||
+      !form.property ||
+      !form.budget ||
+      !form.preferredContact
+    ) {
+      setError("Please fill in all required fields.");
       return;
     }
 
-    if (step < totalSteps) {
-      setStep((previous) => previous + 1);
+    setIsSubmitting(true);
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
+    try {
+      const supabase = createClient();
+
+      const { error: leadError } = await supabase.from("leads").insert({
+        customer_name: form.name.trim(),
+        phone: form.phone.trim(),
+        service: form.service,
+        location: form.location,
+        property_type: form.property,
+        budget: form.budget,
+        description: form.description.trim() || null,
+        preferred_contact: form.preferredContact,
+        source: "Website",
+        status: "New",
       });
-    }
-  };
 
-  const previousStep = () => {
-    if (step > 1) {
-      setStep((previous) => previous - 1);
-      setError("");
+      if (leadError) {
+        console.error("Lead submission error:", leadError);
+        setError(
+          "Something went wrong while submitting your enquiry. Please try again."
+        );
+        setIsSubmitting(false);
+        return;
+      }
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const exitEstimate = () => {
-    window.location.href = "/services";
-  };
-
-  const submitEstimate = () => {
-    if (!validateStep()) {
-      return;
-    }
-
-    const message = `Hello FINETEX INTERIORS 👋
+      const message = `Hello FINETEX INTERIORS,
 
 I'd like to request a free estimate.
 
@@ -204,737 +155,419 @@ Property: ${form.property}
 Budget: ${form.budget}
 
 PROJECT DESCRIPTION
-${form.description || "Not provided"}
+${form.description.trim() || "Not provided"}
 
 CUSTOMER DETAILS
-Name: ${form.name}
-Phone: ${form.phone}
+Name: ${form.name.trim()}
+Phone: ${form.phone.trim()}
 Preferred contact: ${form.preferredContact}
-
-PROJECT PHOTOS
-${
-  photos.length > 0
-    ? `${photos.length} photo(s) selected. I will attach them here on WhatsApp.`
-    : "No photos attached yet."
-}
 
 Thank you.`;
 
-    const whatsappNumber = "254768176570";
+      const whatsappUrl =
+        `https://wa.me/254725408173?text=${encodeURIComponent(message)}`;
 
-    const whatsappUrl =
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-        message
-      )}`;
-
-    window.open(whatsappUrl, "_blank");
+      window.location.href = whatsappUrl;
+    } catch (submissionError) {
+      console.error("Unexpected submission error:", submissionError);
+      setError("Something went wrong. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-neutral-50">
+    <main className="min-h-screen bg-[#f7f5f0] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
 
-      {/* HERO */}
-      <section className="bg-neutral-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mb-6">
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-[#b18a5a]"
+          >
+            <span aria-hidden="true">←</span>
+            Exit Estimate
+          </a>
+        </div>
 
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-amber-400">
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#b18a5a]">
             Free Estimate
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Tell Us About Your Project
+          <h1 className="text-4xl font-semibold tracking-tight text-[#1f1f1f] md:text-5xl">
+            Let&apos;s Plan Your Space
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-neutral-300 sm:text-lg">
-            Give us a few details about your space and project.
-            We'll help you take the next step toward your ideal
-            interior.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-gray-600 md:text-lg">
+            Tell us a little about your project and the FINETEX INTERIORS
+            team will get back to you with the next steps.
           </p>
-
         </div>
-      </section>
 
-      {/* FORM */}
-      <section className="px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
+        <div className="mb-10">
+          <div className="flex items-center justify-center">
+            {[1, 2, 3].map((number) => (
+              <div key={number} className="flex items-center">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold ${
+                    step >= number
+                      ? "bg-[#b18a5a] text-white"
+                      : "border border-gray-300 bg-white text-gray-400"
+                  }`}
+                >
+                  {number}
+                </div>
 
-          {/* PROGRESS */}
-          <div className="mb-10">
-
-            <div className="mb-3 flex items-center justify-between text-sm font-medium">
-              <span className="text-neutral-700">
-                Step {step} of {totalSteps}
-              </span>
-
-              <span className="text-neutral-500">
-                {Math.round(progress)}%
-              </span>
-            </div>
-
-            <div className="h-2 overflow-hidden rounded-full bg-neutral-200">
-              <div
-                className="h-full rounded-full bg-amber-500 transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs sm:text-sm">
-
-              <span
-                className={
-                  step >= 1
-                    ? "font-semibold text-amber-600"
-                    : "text-neutral-400"
-                }
-              >
-                Service
-              </span>
-
-              <span
-                className={
-                  step >= 2
-                    ? "font-semibold text-amber-600"
-                    : "text-neutral-400"
-                }
-              >
-                Project
-              </span>
-
-              <span
-                className={
-                  step >= 3
-                    ? "font-semibold text-amber-600"
-                    : "text-neutral-400"
-                }
-              >
-                Photos
-              </span>
-
-              <span
-                className={
-                  step >= 4
-                    ? "font-semibold text-amber-600"
-                    : "text-neutral-400"
-                }
-              >
-                Details
-              </span>
-
-            </div>
+                {number < 3 && (
+                  <div
+                    className={`h-px w-16 md:w-24 ${
+                      step > number ? "bg-[#b18a5a]" : "bg-gray-300"
+                    }`}
+                  />
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* FORM CARD */}
-          <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-10">
+          <div className="mx-auto mt-4 flex max-w-md justify-between text-xs font-medium uppercase tracking-wider text-gray-500">
+            <span className={step >= 1 ? "text-[#b18a5a]" : ""}>
+              Service
+            </span>
 
-            {/* ERROR */}
-            {error && (
-              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                {error}
-              </div>
-            )}
+            <span className={step >= 2 ? "text-[#b18a5a]" : ""}>
+              Project
+            </span>
 
-            {/* STEP 1 */}
-            {step === 1 && (
-              <div>
+            <span className={step >= 3 ? "text-[#b18a5a]" : ""}>
+              Your Details
+            </span>
+          </div>
+        </div>
 
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-600">
-                  Step 01
-                </p>
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl bg-white p-6 shadow-sm md:p-10"
+        >
 
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-3xl">
-                  What service are you interested in?
+          {step === 1 && (
+            <section>
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-[#1f1f1f]">
+                  What would you like us to work on?
                 </h2>
 
-                <p className="mt-3 text-neutral-600">
-                  Choose the service you'd like FINETEX to help you
-                  with.
+                <p className="mt-2 text-sm leading-6 text-gray-500">
+                  Choose the interior service you are interested in.
                 </p>
+              </div>
 
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {services.map((service) => {
+                  const selected = form.service === service;
 
-                  {services.map((service) => {
-                    const selected = form.service === service;
-
-                    return (
-                      <button
-                        key={service}
-                        type="button"
-                        onClick={() =>
-                          updateForm("service", service)
-                        }
-                        className={`rounded-2xl border-2 p-5 text-left transition ${
-                          selected
-                            ? "border-amber-500 bg-amber-50 shadow-sm"
-                            : "border-neutral-200 bg-white hover:border-amber-300 hover:bg-neutral-50"
+                  return (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => updateForm("service", service)}
+                      className={`rounded-xl border p-5 text-left transition ${
+                        selected
+                          ? "border-[#b18a5a] bg-[#b18a5a]/10 ring-1 ring-[#b18a5a]"
+                          : "border-gray-200 bg-white hover:border-[#b18a5a] hover:bg-[#fdfbf8]"
+                      }`}
+                    >
+                      <span
+                        className={`font-medium ${
+                          selected ? "text-[#8f6d45]" : "text-[#1f1f1f]"
                         }`}
                       >
-
-                        <div className="flex items-center justify-between">
-
-                          <span className="font-semibold text-neutral-900">
-                            {service}
-                          </span>
-
-                          <span
-                            className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs ${
-                              selected
-                                ? "border-amber-500 bg-amber-500 text-white"
-                                : "border-neutral-300 text-transparent"
-                            }`}
-                          >
-                            ✓
-                          </span>
-
-                        </div>
-
-                      </button>
-                    );
-                  })}
-
-                </div>
+                        {service}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </section>
+          )}
 
-            {/* STEP 2 */}
-            {step === 2 && (
-              <div>
-
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-600">
-                  Step 02
-                </p>
-
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-3xl">
+          {step === 2 && (
+            <section>
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-[#1f1f1f]">
                   Tell us about your project
                 </h2>
 
-                <p className="mt-3 text-neutral-600">
-                  This helps us understand the project before we
-                  contact you.
+                <p className="mt-2 text-sm leading-6 text-gray-500">
+                  These details help us understand the scope of your project.
                 </p>
-
-                <div className="mt-8 space-y-6">
-
-                  {/* LOCATION */}
-                  <div>
-
-                    <label
-                      htmlFor="location"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Location
-                    </label>
-
-                    <select
-                      id="location"
-                      value={form.location}
-                      onChange={(event) =>
-                        updateForm(
-                          "location",
-                          event.target.value
-                        )
-                      }
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    >
-                      <option value="">
-                        Select your location
-                      </option>
-
-                      {locations.map((location) => (
-                        <option
-                          key={location}
-                          value={location}
-                        >
-                          {location}
-                        </option>
-                      ))}
-                    </select>
-
-                  </div>
-
-                  {/* PROPERTY */}
-                  <div>
-
-                    <label
-                      htmlFor="property"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Property Type
-                    </label>
-
-                    <select
-                      id="property"
-                      value={form.property}
-                      onChange={(event) =>
-                        updateForm(
-                          "property",
-                          event.target.value
-                        )
-                      }
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    >
-                      <option value="">
-                        Select property type
-                      </option>
-
-                      {properties.map((property) => (
-                        <option
-                          key={property}
-                          value={property}
-                        >
-                          {property}
-                        </option>
-                      ))}
-                    </select>
-
-                  </div>
-
-                  {/* BUDGET */}
-                  <div>
-
-                    <label
-                      htmlFor="budget"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Estimated Budget
-                    </label>
-
-                    <select
-                      id="budget"
-                      value={form.budget}
-                      onChange={(event) =>
-                        updateForm(
-                          "budget",
-                          event.target.value
-                        )
-                      }
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    >
-                      <option value="">
-                        Select your budget
-                      </option>
-
-                      {budgets.map((budget) => (
-                        <option
-                          key={budget}
-                          value={budget}
-                        >
-                          {budget}
-                        </option>
-                      ))}
-                    </select>
-
-                  </div>
-
-                  {/* DESCRIPTION */}
-                  <div>
-
-                    <label
-                      htmlFor="description"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Project Description
-                    </label>
-
-                    <textarea
-                      id="description"
-                      value={form.description}
-                      onChange={(event) =>
-                        updateForm(
-                          "description",
-                          event.target.value
-                        )
-                      }
-                      rows={6}
-                      placeholder="Tell us about what you'd like to change, your preferred style, materials, size, or any other details..."
-                      className="w-full resize-none rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none placeholder:text-neutral-400 transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    />
-
-                  </div>
-
-                </div>
               </div>
-            )}
 
-            {/* STEP 3 */}
-            {step === 3 && (
-              <div>
+              <div className="space-y-6">
 
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-600">
-                  Step 03
-                </p>
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Project Location
+                  </label>
 
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-3xl">
-                  Show us your space
+                  <select
+                    id="location"
+                    value={form.location}
+                    onChange={(event) =>
+                      updateForm("location", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                    required
+                  >
+                    <option value="">Select location</option>
+
+                    {locations.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="property"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Property Type
+                  </label>
+
+                  <select
+                    id="property"
+                    value={form.property}
+                    onChange={(event) =>
+                      updateForm("property", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                    required
+                  >
+                    <option value="">Select property type</option>
+
+                    {properties.map((property) => (
+                      <option key={property} value={property}>
+                        {property}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="budget"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Estimated Budget
+                  </label>
+
+                  <select
+                    id="budget"
+                    value={form.budget}
+                    onChange={(event) =>
+                      updateForm("budget", event.target.value)
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                    required
+                  >
+                    <option value="">Select budget range</option>
+
+                    {budgets.map((budget) => (
+                      <option key={budget} value={budget}>
+                        {budget}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Tell us more about your project
+                    <span className="ml-1 font-normal text-gray-400">
+                      (optional)
+                    </span>
+                  </label>
+
+                  <textarea
+                    id="description"
+                    value={form.description}
+                    onChange={(event) =>
+                      updateForm("description", event.target.value)
+                    }
+                    rows={5}
+                    placeholder="Describe what you would like us to design or renovate..."
+                    className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                  />
+                </div>
+
+              </div>
+            </section>
+          )}
+
+          {step === 3 && (
+            <section>
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-[#1f1f1f]">
+                  How can we reach you?
                 </h2>
 
-                <p className="mt-3 text-neutral-600">
-                  Upload photos of the space you'd like us to work
-                  on. You can select up to 6 images.
+                <p className="mt-2 text-sm leading-6 text-gray-500">
+                  Give us your contact details so we can discuss your project.
                 </p>
+              </div>
 
-                {/* UPLOAD */}
-                <label
-                  htmlFor="photos"
-                  className="mt-8 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 px-6 py-14 text-center transition hover:border-amber-400 hover:bg-amber-50"
-                >
+              <div className="space-y-6">
 
-                  <span className="text-4xl">
-                    📷
-                  </span>
-
-                  <span className="mt-4 text-lg font-bold text-neutral-900">
-                    Upload Project Photos
-                  </span>
-
-                  <span className="mt-2 text-sm text-neutral-500">
-                    PNG, JPG or JPEG • Up to 6 photos
-                  </span>
-
-                  <span className="mt-5 rounded-xl bg-neutral-900 px-5 py-3 text-sm font-semibold text-white">
-                    Choose Photos
-                  </span>
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Full Name
+                  </label>
 
                   <input
-                    id="photos"
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg"
-                    multiple
-                    onChange={handlePhotoUpload}
-                    className="hidden"
+                    id="name"
+                    type="text"
+                    value={form.name}
+                    onChange={(event) =>
+                      updateForm("name", event.target.value)
+                    }
+                    placeholder="Your full name"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                    required
                   />
+                </div>
 
-                </label>
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="mb-2 block text-sm font-medium text-[#1f1f1f]"
+                  >
+                    Phone Number
+                  </label>
 
-                {/* PHOTO PREVIEWS */}
-                {photoPreviews.length > 0 && (
-                  <div className="mt-8">
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(event) =>
+                      updateForm("phone", event.target.value)
+                    }
+                    placeholder="e.g. 0712 345 678"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#b18a5a] focus:ring-1 focus:ring-[#b18a5a]"
+                    required
+                  />
+                </div>
 
-                    <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <label className="mb-3 block text-sm font-medium text-[#1f1f1f]">
+                    Preferred Contact Method
+                  </label>
 
-                      <h3 className="font-bold text-neutral-900">
-                        Selected Photos
-                      </h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {["WhatsApp", "Phone Call"].map((method) => {
+                      const selected = form.preferredContact === method;
 
-                      <span className="text-sm text-neutral-500">
-                        {photos.length} selected
-                      </span>
-
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-
-                      {photoPreviews.map((preview, index) => (
-                        <div
-                          key={preview}
-                          className="group relative overflow-hidden rounded-xl border border-neutral-200"
+                      return (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() =>
+                            updateForm("preferredContact", method)
+                          }
+                          className={`rounded-xl border p-4 text-left transition ${
+                            selected
+                              ? "border-[#b18a5a] bg-[#b18a5a]/10 ring-1 ring-[#b18a5a]"
+                              : "border-gray-200 hover:border-[#b18a5a]"
+                          }`}
                         >
-
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={preview}
-                            alt={`Project photo ${index + 1}`}
-                            className="aspect-square w-full object-cover"
-                          />
-
-                          <button
-                            type="button"
-                            onClick={() => removePhoto(index)}
-                            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-sm text-white transition hover:bg-red-600"
-                            aria-label={`Remove photo ${index + 1}`}
+                          <span
+                            className={`text-sm font-medium ${
+                              selected
+                                ? "text-[#8f6d45]"
+                                : "text-[#1f1f1f]"
+                            }`}
                           >
-                            ×
-                          </button>
-
-                        </div>
-                      ))}
-
-                    </div>
-
-                    <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-800">
-                      Your photos are only previewed on this page for
-                      now. When WhatsApp opens, please attach these
-                      photos to the conversation.
-                    </p>
-
+                            {method}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
               </div>
-            )}
 
-            {/* STEP 4 */}
-            {step === 4 && (
-              <div>
-
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-600">
-                  Step 04
+              <div className="mt-8 rounded-xl bg-[#f7f5f0] p-5">
+                <p className="text-sm leading-6 text-gray-600">
+                  Your information is used only to help FINETEX INTERIORS
+                  understand and respond to your project enquiry.
                 </p>
-
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-3xl">
-                  Your details
-                </h2>
-
-                <p className="mt-3 text-neutral-600">
-                  Tell us how we can reach you.
-                </p>
-
-                <div className="mt-8 space-y-6">
-
-                  {/* NAME */}
-                  <div>
-
-                    <label
-                      htmlFor="name"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Full Name
-                    </label>
-
-                    <input
-                      id="name"
-                      type="text"
-                      value={form.name}
-                      onChange={(event) =>
-                        updateForm(
-                          "name",
-                          event.target.value
-                        )
-                      }
-                      placeholder="Your full name"
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none placeholder:text-neutral-400 transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    />
-
-                  </div>
-
-                  {/* PHONE */}
-                  <div>
-
-                    <label
-                      htmlFor="phone"
-                      className="mb-2 block text-sm font-semibold text-neutral-800"
-                    >
-                      Phone Number
-                    </label>
-
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={(event) =>
-                        updateForm(
-                          "phone",
-                          event.target.value
-                        )
-                      }
-                      placeholder="e.g. 0712 345 678"
-                      className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 outline-none placeholder:text-neutral-400 transition focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
-                    />
-
-                  </div>
-
-                  {/* CONTACT METHOD */}
-                  <div>
-
-                    <p className="mb-3 text-sm font-semibold text-neutral-800">
-                      Preferred Contact
-                    </p>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-
-                      {["WhatsApp", "Phone Call"].map(
-                        (contact) => {
-
-                          const selected =
-                            form.preferredContact === contact;
-
-                          return (
-                            <button
-                              key={contact}
-                              type="button"
-                              onClick={() =>
-                                updateForm(
-                                  "preferredContact",
-                                  contact
-                                )
-                              }
-                              className={`rounded-xl border-2 px-5 py-4 text-left font-semibold transition ${
-                                selected
-                                  ? "border-amber-500 bg-amber-50 text-neutral-900"
-                                  : "border-neutral-200 text-neutral-700 hover:border-amber-300"
-                              }`}
-                            >
-                              <span className="mr-2">
-                                {contact === "WhatsApp"
-                                  ? "💬"
-                                  : "📞"}
-                              </span>
-
-                              {contact}
-                            </button>
-                          );
-                        }
-                      )}
-
-                    </div>
-                  </div>
-
-                  {/* SUMMARY */}
-                  <div className="rounded-2xl bg-neutral-100 p-5">
-
-                    <h3 className="mb-4 font-bold text-neutral-900">
-                      Estimate Summary
-                    </h3>
-
-                    <div className="space-y-2 text-sm">
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-neutral-500">
-                          Service
-                        </span>
-
-                        <span className="text-right font-semibold text-neutral-900">
-                          {form.service}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-neutral-500">
-                          Location
-                        </span>
-
-                        <span className="font-semibold text-neutral-900">
-                          {form.location}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-neutral-500">
-                          Property
-                        </span>
-
-                        <span className="font-semibold text-neutral-900">
-                          {form.property}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-neutral-500">
-                          Budget
-                        </span>
-
-                        <span className="text-right font-semibold text-neutral-900">
-                          {form.budget}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between gap-4">
-                        <span className="text-neutral-500">
-                          Photos
-                        </span>
-
-                        <span className="font-semibold text-neutral-900">
-                          {photos.length}
-                        </span>
-                      </div>
-
-                    </div>
-                  </div>
-
-                </div>
               </div>
-            )}
+            </section>
+          )}
 
-            {/* NAVIGATION */}
-            <div className="mt-10 border-t border-neutral-200 pt-6">
-
-              {step === 1 ? (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-                  {/* BACK TO SERVICES */}
-                  <button
-                    type="button"
-                    onClick={exitEstimate}
-                    className="w-full rounded-xl border-2 border-neutral-300 bg-white px-6 py-4 font-semibold text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50 hover:text-neutral-900 sm:w-auto"
-                  >
-                    ← Back to Services
-                  </button>
-
-                  {/* CONTINUE */}
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    disabled={!form.service}
-                    className={`w-full rounded-xl px-8 py-4 text-base font-bold transition-all sm:w-auto ${
-                      !form.service
-                        ? "cursor-not-allowed bg-neutral-200 text-neutral-400"
-                        : "bg-amber-500 text-white shadow-md hover:bg-amber-600 hover:shadow-lg active:scale-[0.98]"
-                    }`}
-                  >
-                    Continue →
-                  </button>
-
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-                  {/* LEFT NAVIGATION */}
-                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-
-                    {/* PREVIOUS STEP */}
-                    <button
-                      type="button"
-                      onClick={previousStep}
-                      className="w-full rounded-xl border-2 border-neutral-300 bg-white px-6 py-4 font-semibold text-neutral-800 transition hover:border-neutral-400 hover:bg-neutral-50 sm:w-auto"
-                    >
-                      ← Back
-                    </button>
-
-                    {/* EXIT ESTIMATE */}
-                    <button
-                      type="button"
-                      onClick={exitEstimate}
-                      className="w-full rounded-xl px-5 py-4 text-sm font-semibold text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 sm:w-auto"
-                    >
-                      Exit Estimate
-                    </button>
-
-                  </div>
-
-                  {/* RIGHT NAVIGATION */}
-                  {step < totalSteps ? (
-                    <button
-                      type="button"
-                      onClick={nextStep}
-                      className="w-full rounded-xl bg-amber-500 px-8 py-4 text-base font-bold text-white shadow-md transition-all hover:bg-amber-600 hover:shadow-lg active:scale-[0.98] sm:w-auto"
-                    >
-                      Continue →
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={submitEstimate}
-                      className="w-full rounded-xl bg-green-600 px-8 py-4 text-base font-bold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg active:scale-[0.98] sm:w-auto"
-                    >
-                      💬 Request Estimate on WhatsApp
-                    </button>
-                  )}
-
-                </div>
-              )}
-
+          {error && (
+            <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {error}
             </div>
+          )}
+
+          <div className="mt-10 flex items-center justify-between gap-4">
+
+            <div>
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={goToPreviousStep}
+                  disabled={isSubmitting}
+                  className="rounded-full border border-gray-300 px-7 py-3 text-sm font-semibold text-[#1f1f1f] transition hover:border-[#b18a5a] hover:text-[#b18a5a] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Back
+                </button>
+              )}
+            </div>
+
+            {step < 3 ? (
+              <button
+                type="button"
+                onClick={goToNextStep}
+                className="rounded-full bg-[#1f1f1f] px-7 py-3 text-sm font-semibold !text-white transition hover:bg-[#b18a5a] hover:!text-white"
+                style={{ color: "#ffffff" }}
+              >
+                Continue
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-full bg-[#1f1f1f] px-7 py-3 text-sm font-semibold !text-white transition hover:bg-[#b18a5a] hover:!text-white disabled:cursor-not-allowed disabled:opacity-60"
+                style={{ color: "#ffffff" }}
+              >
+                {isSubmitting
+                  ? "Submitting..."
+                  : "Request Estimate on WhatsApp"}
+              </button>
+            )}
 
           </div>
 
-          {/* PRIVACY MESSAGE */}
-          <p className="mt-6 text-center text-sm leading-6 text-neutral-500">
-            Your information is used only to help FINETEX INTERIORS
-            understand and respond to your project enquiry.
+          <p className="mt-6 text-center text-xs leading-5 text-gray-500">
+            Your information is used only to help FINETEX INTERIORS understand
+            and respond to your project enquiry.
           </p>
 
-        </div>
-      </section>
-
+        </form>
+      </div>
     </main>
   );
 }

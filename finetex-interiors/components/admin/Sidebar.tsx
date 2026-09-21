@@ -1,7 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   BarChart3,
   ClipboardList,
@@ -10,10 +12,12 @@ import {
   Home,
   LayoutDashboard,
   LogOut,
+  ReceiptText,
   Users,
   UserRound,
   X,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type SidebarProps = {
   mobileOpen?: boolean;
@@ -57,6 +61,11 @@ const navigation = [
     icon: BarChart3,
   },
   {
+    name: "Invoices",
+    href: "/admin/invoices",
+    icon: ReceiptText,
+  },
+  {
     name: "Analytics",
     href: "/admin/analytics",
     icon: BarChart3,
@@ -68,6 +77,25 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Sidebar sign out error:", error);
+      setLoggingOut(false);
+      return;
+    }
+
+    window.location.href = "/admin/login";
+  };
 
   return (
     <>
@@ -172,10 +200,13 @@ export default function Sidebar({
 
           <button
             type="button"
-            className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#777] transition hover:bg-red-50 hover:text-red-600"
+            onClick={handleSignOut}
+            disabled={loggingOut}
+            className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#777] transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogOut size={18} strokeWidth={1.7} />
-            Sign Out
+
+            {loggingOut ? "Signing out..." : "Sign Out"}
           </button>
         </div>
       </aside>

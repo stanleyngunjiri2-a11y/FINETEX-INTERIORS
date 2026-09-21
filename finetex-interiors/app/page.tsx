@@ -108,7 +108,7 @@ export default function HomePage() {
                 </Link>
 
                 <a
-                  href="https://wa.me/254768176570"
+                  href="https://wa.me/254725408173"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Chat with FINETEX INTERIORS on WhatsApp"
@@ -329,7 +329,7 @@ export default function HomePage() {
               </Link>
 
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Chat with FINETEX INTERIORS on WhatsApp"

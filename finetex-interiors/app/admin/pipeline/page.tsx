@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   Phone,
@@ -8,7 +9,10 @@ import {
   CalendarDays,
   ArrowRight,
   Users,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type PipelineStage =
   | "New Lead"
@@ -19,8 +23,43 @@ type PipelineStage =
   | "Project"
   | "Completed";
 
-type Lead = {
+type Customer = {
   id: number;
+  full_name: string;
+  phone: string | null;
+  location: string | null;
+  created_at: string;
+};
+
+type Quotation = {
+  id: number;
+  quotation_number: string;
+  customer_id: number;
+  title: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  customer?: Customer | null;
+};
+
+type Project = {
+  id: number;
+  project_number: string;
+  customer_id: number;
+  quotation_id: number | null;
+  project_name: string;
+  service: string;
+  location: string | null;
+  budget: number;
+  status: string;
+  expected_completion_date: string | null;
+  created_at: string;
+  customer?: Customer | null;
+};
+
+type PipelineRecord = {
+  id: string;
+  sourceId: number;
   name: string;
   service: string;
   location: string;
@@ -28,6 +67,7 @@ type Lead = {
   date: string;
   phone: string;
   stage: PipelineStage;
+  source: "customer" | "quotation" | "project";
 };
 
 const stages: {
@@ -64,155 +104,22 @@ const stages: {
   },
 ];
 
-const leads: Lead[] = [
-  {
-    id: 1,
-    name: "James Mwangi",
-    service: "Kitchen Renovation",
-    location: "Ruiru",
-    value: 285000,
-    date: "Sep 9, 2026",
-    phone: "254712345678",
-    stage: "New Lead",
-  },
-  {
-    id: 2,
-    name: "Sarah Wanjiku",
-    service: "Custom Wardrobes",
-    location: "Kilimani",
-    value: 175000,
-    date: "Sep 8, 2026",
-    phone: "254723456789",
-    stage: "New Lead",
-  },
-  {
-    id: 3,
-    name: "Brian Kamau",
-    service: "TV Cabinet",
-    location: "Thika",
-    value: 95000,
-    date: "Sep 7, 2026",
-    phone: "254734567890",
-    stage: "Contacted",
-  },
-  {
-    id: 4,
-    name: "Mercy Njeri",
-    service: "Gypsum Ceiling",
-    location: "Roysambu",
-    value: 145000,
-    date: "Sep 6, 2026",
-    phone: "254745678901",
-    stage: "Contacted",
-  },
-  {
-    id: 5,
-    name: "David Otieno",
-    service: "Full Interior Renovation",
-    location: "Westlands",
-    value: 650000,
-    date: "Sep 5, 2026",
-    phone: "254756789012",
-    stage: "Site Visit",
-  },
-  {
-    id: 6,
-    name: "Anne Wambui",
-    service: "Bathroom Renovation",
-    location: "Kiambu",
-    value: 210000,
-    date: "Sep 4, 2026",
-    phone: "254767890123",
-    stage: "Site Visit",
-  },
-  {
-    id: 7,
-    name: "Peter Kariuki",
-    service: "Kitchen Renovation",
-    location: "Lavington",
-    value: 420000,
-    date: "Sep 3, 2026",
-    phone: "254778901234",
-    stage: "Quotation",
-  },
-  {
-    id: 8,
-    name: "Lucy Achieng",
-    service: "Wardrobes & Cabinets",
-    location: "South B",
-    value: 260000,
-    date: "Sep 2, 2026",
-    phone: "254789012345",
-    stage: "Quotation",
-  },
-  {
-    id: 9,
-    name: "Kevin Maina",
-    service: "TV Cabinet",
-    location: "Kasarani",
-    value: 120000,
-    date: "Sep 1, 2026",
-    phone: "254790123456",
-    stage: "Approved",
-  },
-  {
-    id: 10,
-    name: "Grace Njoki",
-    service: "Kitchen Renovation",
-    location: "Runda",
-    value: 580000,
-    date: "Aug 30, 2026",
-    phone: "254701234567",
-    stage: "Approved",
-  },
-  {
-    id: 11,
-    name: "Samuel Kibet",
-    service: "Full Interior Renovation",
-    location: "Karen",
-    value: 850000,
-    date: "Aug 28, 2026",
-    phone: "254711234567",
-    stage: "Project",
-  },
-  {
-    id: 12,
-    name: "Faith Wairimu",
-    service: "Custom Wardrobes",
-    location: "Ruaka",
-    value: 320000,
-    date: "Aug 25, 2026",
-    phone: "254722345678",
-    stage: "Project",
-  },
-  {
-    id: 13,
-    name: "Daniel Kamau",
-    service: "Gypsum Ceiling",
-    location: "Embakasi",
-    value: 180000,
-    date: "Aug 20, 2026",
-    phone: "254733456789",
-    stage: "Completed",
-  },
-  {
-    id: 14,
-    name: "Mary Wanjiru",
-    service: "Bathroom Renovation",
-    location: "Lavington",
-    value: 240000,
-    date: "Aug 18, 2026",
-    phone: "254744567890",
-    stage: "Completed",
-  },
-];
-
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-KE", {
     style: "currency",
     currency: "KES",
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function formatDate(date: string) {
+  if (!date) return "—";
+
+  return new Intl.DateTimeFormat("en-KE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
 }
 
 function stageColor(stage: PipelineStage) {
@@ -243,36 +150,340 @@ function stageColor(stage: PipelineStage) {
   }
 }
 
+function getDotColor(stage: PipelineStage) {
+  switch (stage) {
+    case "New Lead":
+      return "bg-blue-500";
+
+    case "Contacted":
+      return "bg-purple-500";
+
+    case "Site Visit":
+      return "bg-orange-500";
+
+    case "Quotation":
+      return "bg-yellow-500";
+
+    case "Approved":
+      return "bg-green-500";
+
+    case "Project":
+      return "bg-indigo-500";
+
+    case "Completed":
+      return "bg-gray-500";
+
+    default:
+      return "bg-gray-400";
+  }
+}
+
+function getCustomerStage(customer: Customer): PipelineStage {
+  /*
+   * Customers without a quotation or project are treated as new leads.
+   *
+   * Since the current database does not yet store explicit
+   * "Contacted" or "Site Visit" stages, those stages will remain
+   * available for the future dedicated lead workflow.
+   */
+  return "New Lead";
+}
+
+function getQuotationStage(quotation: Quotation): PipelineStage {
+  const status = quotation.status.toLowerCase();
+
+  if (status === "accepted") {
+    return "Approved";
+  }
+
+  if (status === "rejected" || status === "expired") {
+    return "Quotation";
+  }
+
+  return "Quotation";
+}
+
+function getProjectStage(project: Project): PipelineStage {
+  const status = project.status.toLowerCase();
+
+  if (
+    status === "completed" ||
+    status === "complete" ||
+    status === "finished"
+  ) {
+    return "Completed";
+  }
+
+  return "Project";
+}
+
+function normalizePhone(phone: string | null) {
+  if (!phone) return "";
+
+  const cleaned = phone.replace(/\D/g, "");
+
+  if (cleaned.startsWith("0")) {
+    return `254${cleaned.slice(1)}`;
+  }
+
+  if (cleaned.startsWith("254")) {
+    return cleaned;
+  }
+
+  return cleaned;
+}
+
 export default function PipelinePage() {
+  const supabase = createClient();
+
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
 
-  const filteredLeads = useMemo(() => {
+  async function loadPipeline(showRefreshLoader = false) {
+    try {
+      setError("");
+
+      if (showRefreshLoader) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const [customersResult, quotationsResult, projectsResult] =
+        await Promise.all([
+          supabase
+            .from("customers")
+            .select("id, full_name, phone, location, created_at")
+            .order("created_at", { ascending: false }),
+
+          supabase
+            .from("quotations")
+            .select(
+              "id, quotation_number, customer_id, title, amount, status, created_at"
+            )
+            .order("created_at", { ascending: false }),
+
+          supabase
+            .from("projects")
+            .select(
+              "id, project_number, customer_id, quotation_id, project_name, service, location, budget, status, expected_completion_date, created_at"
+            )
+            .order("created_at", { ascending: false }),
+        ]);
+
+      if (customersResult.error) {
+        throw new Error(customersResult.error.message);
+      }
+
+      if (quotationsResult.error) {
+        throw new Error(quotationsResult.error.message);
+      }
+
+      if (projectsResult.error) {
+        throw new Error(projectsResult.error.message);
+      }
+
+      const customerData = (customersResult.data ?? []) as Customer[];
+      const quotationData = (quotationsResult.data ?? []) as Quotation[];
+      const projectData = (projectsResult.data ?? []) as Project[];
+
+      const customerMap = new Map(
+        customerData.map((customer) => [customer.id, customer])
+      );
+
+      setCustomers(customerData);
+
+      setQuotations(
+        quotationData.map((quotation) => ({
+          ...quotation,
+          customer: customerMap.get(quotation.customer_id) ?? null,
+        }))
+      );
+
+      setProjects(
+        projectData.map((project) => ({
+          ...project,
+          customer: customerMap.get(project.customer_id) ?? null,
+        }))
+      );
+    } catch (err) {
+      console.error("Pipeline loading error:", err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load pipeline data."
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPipeline();
+  }, []);
+
+  const pipelineRecords = useMemo<PipelineRecord[]>(() => {
+    const records: PipelineRecord[] = [];
+
+    const projectCustomerIds = new Set(
+      projects.map((project) => project.customer_id)
+    );
+
+    const quotationCustomerIds = new Set(
+      quotations.map((quotation) => quotation.customer_id)
+    );
+
+    /*
+     * Customers without quotations or projects become New Leads.
+     */
+    customers
+      .filter(
+        (customer) =>
+          !projectCustomerIds.has(customer.id) &&
+          !quotationCustomerIds.has(customer.id)
+      )
+      .forEach((customer) => {
+        records.push({
+          id: `customer-${customer.id}`,
+          sourceId: customer.id,
+          name: customer.full_name,
+          service: "New enquiry",
+          location: customer.location || "Location not provided",
+          value: 0,
+          date: customer.created_at,
+          phone: normalizePhone(customer.phone),
+          stage: getCustomerStage(customer),
+          source: "customer",
+        });
+      });
+
+    /*
+     * Quotations that don't yet have a project become
+     * Quotation or Approved records.
+     */
+    quotations
+      .filter(
+        (quotation) =>
+          !projects.some(
+            (project) => project.quotation_id === quotation.id
+          )
+      )
+      .forEach((quotation) => {
+        const customer = quotation.customer;
+
+        records.push({
+          id: `quotation-${quotation.id}`,
+          sourceId: quotation.id,
+          name: customer?.full_name || "Unknown Customer",
+          service: quotation.title,
+          location: customer?.location || "Location not provided",
+          value: Number(quotation.amount) || 0,
+          date: quotation.created_at,
+          phone: normalizePhone(customer?.phone || null),
+          stage: getQuotationStage(quotation),
+          source: "quotation",
+        });
+      });
+
+    /*
+     * Projects become Project or Completed records.
+     */
+    projects.forEach((project) => {
+      const customer = project.customer;
+
+      records.push({
+        id: `project-${project.id}`,
+        sourceId: project.id,
+        name: customer?.full_name || "Unknown Customer",
+        service: project.service || project.project_name,
+        location:
+          project.location ||
+          customer?.location ||
+          "Location not provided",
+        value: Number(project.budget) || 0,
+        date: project.created_at,
+        phone: normalizePhone(customer?.phone || null),
+        stage: getProjectStage(project),
+        source: "project",
+      });
+    });
+
+    return records;
+  }, [customers, quotations, projects]);
+
+  const filteredRecords = useMemo(() => {
     const query = search.toLowerCase().trim();
 
     if (!query) {
-      return leads;
+      return pipelineRecords;
     }
 
-    return leads.filter(
-      (lead) =>
-        lead.name.toLowerCase().includes(query) ||
-        lead.service.toLowerCase().includes(query) ||
-        lead.location.toLowerCase().includes(query)
+    return pipelineRecords.filter(
+      (record) =>
+        record.name.toLowerCase().includes(query) ||
+        record.service.toLowerCase().includes(query) ||
+        record.location.toLowerCase().includes(query)
     );
-  }, [search]);
+  }, [pipelineRecords, search]);
 
-  const totalPipelineValue = leads.reduce(
-    (total, lead) => total + lead.value,
-    0
+  const totalPipelineValue = useMemo(
+    () =>
+      pipelineRecords.reduce(
+        (total, record) => total + record.value,
+        0
+      ),
+    [pipelineRecords]
   );
 
-  const activeLeads = leads.filter(
-    (lead) => lead.stage !== "Completed"
-  ).length;
+  const activeRecords = useMemo(
+    () =>
+      pipelineRecords.filter(
+        (record) => record.stage !== "Completed"
+      ).length,
+    [pipelineRecords]
+  );
 
-  const completedProjects = leads.filter(
-    (lead) => lead.stage === "Completed"
-  ).length;
+  const completedProjects = useMemo(
+    () =>
+      pipelineRecords.filter(
+        (record) => record.stage === "Completed"
+      ).length,
+    [pipelineRecords]
+  );
+
+  const totalCustomers = customers.length;
+
+  function openWhatsApp(record: PipelineRecord) {
+    if (!record.phone) return;
+
+    const message = `Hello ${record.name}, this is FINETEX INTERIORS regarding your ${record.service} project.`;
+
+    window.open(
+      `https://wa.me/${record.phone}?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[500px] items-center justify-center">
+        <div className="flex items-center gap-3 text-sm text-gray-500">
+          <Loader2 size={20} className="animate-spin" />
+          Loading pipeline...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -288,34 +499,59 @@ export default function PipelinePage() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-            Track every FINETEX client from the first enquiry to completed
-            project.
+            Track FINETEX clients from enquiry, through quotations and
+            projects, to completion.
           </p>
         </div>
 
-        {/* SEARCH */}
-        <div className="relative w-full lg:w-80">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
+        <div className="flex w-full gap-2 lg:w-auto">
+          <div className="relative w-full lg:w-80">
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
 
-          <input
-            type="text"
-            placeholder="Search clients..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#b58b2a] focus:ring-2 focus:ring-[#b58b2a]/10"
-          />
+            <input
+              type="text"
+              placeholder="Search clients..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#b58b2a] focus:ring-2 focus:ring-[#b58b2a]/10"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => loadPipeline(true)}
+            disabled={refreshing}
+            className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw
+              size={16}
+              className={refreshing ? "animate-spin" : ""}
+            />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </div>
 
+      {/* ERROR */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-medium text-red-700">
+            Failed to load pipeline
+          </p>
+
+          <p className="mt-1 text-xs text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* SUMMARY */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-gray-500">
-              Active Pipeline
+              Customers
             </p>
 
             <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600">
@@ -324,11 +560,31 @@ export default function PipelinePage() {
           </div>
 
           <p className="mt-4 text-2xl font-bold text-gray-900">
-            {activeLeads}
+            {totalCustomers}
           </p>
 
           <p className="mt-1 text-xs text-gray-500">
-            Leads currently being handled
+            Customers in the database
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-500">
+              Active Pipeline
+            </p>
+
+            <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600">
+              <ArrowRight size={19} />
+            </div>
+          </div>
+
+          <p className="mt-4 text-2xl font-bold text-gray-900">
+            {activeRecords}
+          </p>
+
+          <p className="mt-1 text-xs text-gray-500">
+            Records not yet completed
           </p>
         </div>
 
@@ -348,7 +604,7 @@ export default function PipelinePage() {
           </p>
 
           <p className="mt-1 text-xs text-gray-500">
-            Estimated value across all records
+            Quotations and project budgets
           </p>
         </div>
 
@@ -368,7 +624,7 @@ export default function PipelinePage() {
           </p>
 
           <p className="mt-1 text-xs text-gray-500">
-            Projects completed
+            Completed projects
           </p>
         </div>
       </div>
@@ -376,20 +632,14 @@ export default function PipelinePage() {
       {/* PIPELINE */}
       <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="border-b border-gray-100 p-5 sm:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">
-                Client Pipeline
-              </h2>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">
+              Client Pipeline
+            </h2>
 
-              <p className="mt-1 text-sm text-gray-500">
-                Follow the progress of every client and project.
-              </p>
-            </div>
-
-            <div className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-[#9a751f]">
-              Demo pipeline
-            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              Live data from customers, quotations and projects.
+            </p>
           </div>
         </div>
 
@@ -397,12 +647,12 @@ export default function PipelinePage() {
         <div className="overflow-x-auto p-5 sm:p-6">
           <div className="flex min-w-[1450px] gap-4">
             {stages.map((stage) => {
-              const stageLeads = filteredLeads.filter(
-                (lead) => lead.stage === stage.name
+              const stageRecords = filteredRecords.filter(
+                (record) => record.stage === stage.name
               );
 
-              const stageValue = stageLeads.reduce(
-                (total, lead) => total + lead.value,
+              const stageValue = stageRecords.reduce(
+                (total, record) => total + record.value,
                 0
               );
 
@@ -419,7 +669,7 @@ export default function PipelinePage() {
                       </h3>
 
                       <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-gray-100 px-2 text-xs font-semibold text-gray-600">
-                        {stageLeads.length}
+                        {stageRecords.length}
                       </span>
                     </div>
 
@@ -427,7 +677,7 @@ export default function PipelinePage() {
                       {stage.description}
                     </p>
 
-                    {stageLeads.length > 0 && (
+                    {stageRecords.length > 0 && (
                       <p className="mt-1 text-[11px] font-medium text-[#b58b2a]">
                         {formatCurrency(stageValue)}
                       </p>
@@ -437,45 +687,58 @@ export default function PipelinePage() {
                   {/* COLUMN */}
                   <div className="min-h-[500px] rounded-2xl bg-[#f7f5f0] p-2">
                     <div className="space-y-3">
-                      {stageLeads.length === 0 ? (
+                      {stageRecords.length === 0 ? (
                         <div className="flex min-h-[150px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white/60 p-4 text-center">
                           <p className="text-xs text-gray-400">
-                            No clients here
+                            No records here
                           </p>
                         </div>
                       ) : (
-                        stageLeads.map((lead) => (
+                        stageRecords.map((record) => (
                           <div
-                            key={lead.id}
+                            key={record.id}
                             className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                           >
                             {/* CLIENT */}
                             <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <h4 className="text-sm font-bold text-gray-900">
-                                  {lead.name}
+                              <div className="min-w-0">
+                                <h4 className="truncate text-sm font-bold text-gray-900">
+                                  {record.name}
                                 </h4>
 
                                 <p className="mt-1 text-xs leading-5 text-gray-500">
-                                  {lead.service}
+                                  {record.service}
                                 </p>
                               </div>
 
                               <span
                                 className={`h-2 w-2 shrink-0 rounded-full ${getDotColor(
-                                  lead.stage
+                                  record.stage
                                 )}`}
                               />
+                            </div>
+
+                            {/* SOURCE */}
+                            <div className="mt-3">
+                              <span
+                                className={`rounded-full px-2 py-1 text-[10px] font-semibold ${stageColor(
+                                  record.stage
+                                )}`}
+                              >
+                                {record.source}
+                              </span>
                             </div>
 
                             {/* VALUE */}
                             <div className="mt-4 rounded-lg bg-gray-50 p-2.5">
                               <p className="text-[10px] uppercase tracking-wide text-gray-400">
-                                Estimated Value
+                                Value
                               </p>
 
                               <p className="mt-0.5 text-sm font-bold text-gray-900">
-                                {formatCurrency(lead.value)}
+                                {record.value > 0
+                                  ? formatCurrency(record.value)
+                                  : "Not set"}
                               </p>
                             </div>
 
@@ -483,29 +746,34 @@ export default function PipelinePage() {
                             <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
                               <MapPin size={13} />
 
-                              <span>{lead.location}</span>
+                              <span className="truncate">
+                                {record.location}
+                              </span>
                             </div>
 
                             {/* DATE */}
                             <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                               <CalendarDays size={13} />
 
-                              <span>{lead.date}</span>
+                              <span>{formatDate(record.date)}</span>
                             </div>
 
-                            {/* ACTIONS */}
-                            <div className="mt-4 flex gap-2">
-                              <a
-                                href={`https://wa.me/${lead.phone}?text=${encodeURIComponent(
-                                  `Hello ${lead.name}, this is FINETEX INTERIORS regarding your ${lead.service} project.`
-                                )}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#b58b2a] px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-[#9d771f]"
-                              >
-                                <Phone size={13} />
-                                WhatsApp
-                              </a>
+                            {/* ACTION */}
+                            <div className="mt-4">
+                              {record.phone ? (
+                                <button
+                                  type="button"
+                                  onClick={() => openWhatsApp(record)}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#b58b2a] px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-[#9d771f]"
+                                >
+                                  <Phone size={13} />
+                                  WhatsApp
+                                </button>
+                              ) : (
+                                <div className="rounded-lg bg-gray-50 px-2 py-2 text-center text-[11px] text-gray-400">
+                                  No phone number
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))
@@ -519,7 +787,7 @@ export default function PipelinePage() {
         </div>
       </div>
 
-      {/* EXPLANATION */}
+      {/* HOW IT WORKS */}
       <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="rounded-xl bg-white p-2.5 text-[#b58b2a]">
@@ -528,15 +796,15 @@ export default function PipelinePage() {
 
           <div>
             <h3 className="font-semibold text-gray-900">
-              How the pipeline will work
+              How the live pipeline works
             </h3>
 
             <p className="mt-1 text-sm leading-6 text-gray-600">
-              When we connect the admin dashboard to the database, every
-              estimate submitted from the public website will automatically
-              enter the <strong>New Lead</strong> stage. You will then be able
-              to move the client through the pipeline as the project
-              progresses.
+              Pipeline records are now generated from the real FINETEX
+              database. Customers without quotations or projects appear as
+              new leads, quotations appear in the quotation stages, accepted
+              quotations appear as approved, and projects move through active
+              and completed stages according to their database status.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-gray-600">
@@ -565,44 +833,6 @@ export default function PipelinePage() {
           </div>
         </div>
       </div>
-
-      {/* DEMO NOTICE */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <p className="text-xs leading-5 text-gray-500">
-          <strong className="text-gray-700">Demo data:</strong>{" "}
-          These pipeline records are currently stored inside the page for
-          demonstration. Later, we will connect this section to the real
-          FINETEX database so leads and project statuses update automatically.
-        </p>
-      </div>
     </div>
   );
-}
-
-function getDotColor(stage: PipelineStage) {
-  switch (stage) {
-    case "New Lead":
-      return "bg-blue-500";
-
-    case "Contacted":
-      return "bg-purple-500";
-
-    case "Site Visit":
-      return "bg-orange-500";
-
-    case "Quotation":
-      return "bg-yellow-500";
-
-    case "Approved":
-      return "bg-green-500";
-
-    case "Project":
-      return "bg-indigo-500";
-
-    case "Completed":
-      return "bg-gray-500";
-
-    default:
-      return "bg-gray-400";
-  }
 }

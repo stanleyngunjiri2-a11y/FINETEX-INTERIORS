@@ -2,91 +2,44 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { kitchenDesigns as kitchenImages } from "@/lib/designs";
 
-const kitchenDesigns = [
-  {
-    image:
-      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1800&q=90",
-    alt: "Modern kitchen interior",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1556912167-f556f1f39fdf?auto=format&fit=crop&w=1800&q=90",
-    alt: "Contemporary kitchen design",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1800&q=90",
-    alt: "Elegant modern kitchen",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=90",
-    alt: "Modern kitchen cabinetry",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1800&q=90",
-    alt: "Contemporary kitchen interior",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1800&q=90",
-    alt: "Modern kitchen with island",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1800&q=90",
-    alt: "Kitchen renovation inspiration",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=90",
-    alt: "Luxury kitchen interior",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1800&q=90",
-    alt: "Refined kitchen interior",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=90",
-    alt: "Modern kitchen inspiration",
-  },
-];
+const kitchenDesigns = kitchenImages.map((image, index) => ({
+  image,
+  alt: `FINETEX INTERIORS kitchen design ${index + 1}`,
+}));
 
 export default function KitchensPage() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setSelectedImage(null);
-  };
+  }, []);
 
-  const showPrevious = () => {
-    if (selectedImage === null) return;
+  const showPrevious = useCallback(() => {
+    setSelectedImage((current) => {
+      if (current === null) return null;
 
-    setSelectedImage(
-      selectedImage === 0
+      return current === 0
         ? kitchenDesigns.length - 1
-        : selectedImage - 1
-    );
-  };
+        : current - 1;
+    });
+  }, []);
 
-  const showNext = () => {
-    if (selectedImage === null) return;
+  const showNext = useCallback(() => {
+    setSelectedImage((current) => {
+      if (current === null) return null;
 
-    setSelectedImage(
-      selectedImage === kitchenDesigns.length - 1
+      return current === kitchenDesigns.length - 1
         ? 0
-        : selectedImage + 1
-    );
-  };
+        : current + 1;
+    });
+  }, []);
 
   useEffect(() => {
     if (selectedImage === null) return;
@@ -106,14 +59,13 @@ export default function KitchensPage() {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
     document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [selectedImage]);
+  }, [selectedImage, closeLightbox, showPrevious, showNext]);
 
   return (
     <>
@@ -215,7 +167,7 @@ export default function KitchensPage() {
               </Link>
 
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-[#cfc8bc] px-7 py-3.5 text-sm font-semibold text-[#171717] transition hover:border-[#171717] hover:bg-[#171717] hover:text-white"

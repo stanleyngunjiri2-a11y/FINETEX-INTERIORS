@@ -1,24 +1,25 @@
+
 import Image from "next/image";
 import Link from "next/link";
 
 const projects = [
   {
-    title: "Modern Kitchen",
-    category: "Kitchen Renovation",
-    image:
-      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1400&q=85",
+    title: "Kitchens",
+    category: "Kitchen Design & Renovation",
+    image: "/images/gallery/kitchens/FB_IMG_1789927717078.jpg",
+    href: "/gallery",
   },
   {
-    title: "Contemporary Living Space",
-    category: "Interior Design",
-    image:
-      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=85",
+    title: "Gypsum",
+    category: "Gypsum Ceiling Designs",
+    image: "/images/gallery/gypsum/FB_IMG_1789930686842.jpg",
+    href: "/gallery",
   },
   {
-    title: "Elegant Bedroom",
-    category: "Wardrobe & Interior",
-    image:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1400&q=85",
+    title: "Wardrobes",
+    category: "Custom Wardrobe Solutions",
+    image: "/images/gallery/wardrobes/FB_IMG_1789931390475.jpg",
+    href: "/gallery",
   },
 ];
 
@@ -61,34 +62,38 @@ export default function FeaturedProjects() {
         {/* Projects */}
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
-            <article
+            <Link
               key={project.title}
-              className="group overflow-hidden rounded-3xl bg-[#f7f5f0]"
+              href={project.href}
+              className="group block overflow-hidden rounded-3xl bg-[#f7f5f0] focus:outline-none focus:ring-2 focus:ring-[#b18a5a] focus:ring-offset-2"
+              aria-label={`View ${project.title} projects in the gallery`}
             >
-              <div className="relative aspect-[4/5] overflow-hidden">
-                <Image
-                  src={project.image}
-                  alt={`${project.title} - ${project.category}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition duration-700 group-hover:scale-105"
-                />
+              <article>
+                <div className="relative aspect-[4/5] overflow-hidden">
+                  <Image
+                    src={project.image}
+                    alt={`${project.title} - ${project.category}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-700 group-hover:scale-105"
+                  />
 
-                {/* Dark overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                  {/* Dark overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
-                {/* Project information */}
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d0a66b]">
-                    {project.category}
-                  </p>
+                  {/* Project information */}
+                  <div className="absolute inset-x-0 bottom-0 p-6 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d0a66b]">
+                      {project.category}
+                    </p>
 
-                  <h3 className="mt-2 text-2xl font-semibold">
-                    {project.title}
-                  </h3>
+                    <h3 className="mt-2 text-2xl font-semibold">
+                      {project.title}
+                    </h3>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+            </Link>
           ))}
         </div>
 

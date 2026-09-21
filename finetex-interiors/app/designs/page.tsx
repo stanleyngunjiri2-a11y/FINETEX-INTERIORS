@@ -7,6 +7,14 @@ import { useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+import {
+  kitchenDesigns,
+  bathroomDesigns,
+  gypsumDesigns,
+  tvCabinetDesigns,
+  wardrobeDesigns,
+} from "@/lib/designs";
+
 const categories = [
   "All",
   "Kitchens",
@@ -22,8 +30,7 @@ const designCategories = [
     category: "Kitchens",
     description:
       "Explore modern kitchen layouts, cabinetry, finishes, islands, and practical storage ideas.",
-    image:
-      "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1800&q=90",
+    image: kitchenDesigns[0],
     href: "/designs/kitchens",
   },
   {
@@ -31,8 +38,7 @@ const designCategories = [
     category: "Bathrooms",
     description:
       "Discover contemporary bathroom styles, finishes, layouts, and elegant interior ideas.",
-    image:
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=1800&q=90",
+    image: bathroomDesigns[0],
     href: "/designs/bathrooms",
   },
   {
@@ -40,8 +46,7 @@ const designCategories = [
     category: "Gypsum Ceilings",
     description:
       "Explore decorative ceiling concepts, modern lighting ideas, and elegant gypsum finishes.",
-    image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=90",
+    image: gypsumDesigns[0],
     href: "/designs/gypsum-ceilings",
   },
   {
@@ -49,8 +54,7 @@ const designCategories = [
     category: "TV Cabinets",
     description:
       "Browse modern TV walls, entertainment units, custom cabinetry, and storage solutions.",
-    image:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1800&q=90",
+    image: tvCabinetDesigns[0],
     href: "/designs/tv-cabinets",
   },
   {
@@ -58,8 +62,7 @@ const designCategories = [
     category: "Wardrobes",
     description:
       "Explore built-in wardrobes, modern storage solutions, and bedroom cabinetry ideas.",
-    image:
-      "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1800&q=90",
+    image: wardrobeDesigns[0],
     href: "/designs/wardrobes",
   },
 ];
@@ -84,8 +87,8 @@ export default function DesignsPage() {
         ====================================================== */}
         <section className="relative flex min-h-[75vh] items-center overflow-hidden bg-[#171717] text-white">
           <Image
-            src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=2000&q=90"
-            alt="Luxury interior design inspiration"
+            src={kitchenDesigns[0]}
+            alt="FINETEX INTERIORS interior design"
             fill
             priority
             sizes="100vw"
@@ -114,13 +117,13 @@ export default function DesignsPage() {
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
                 <Link
                   href="/estimate"
-                  className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold transition hover:bg-[#d0a76a]"
+                  className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
                 >
                   Estimate My Project
                 </Link>
 
                 <a
-                  href="https://wa.me/254768176570"
+                  href="https://wa.me/254725408173"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold transition hover:bg-white hover:text-[#171717]"
@@ -244,8 +247,8 @@ export default function DesignsPage() {
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem]">
                 <Image
-                  src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=90"
-                  alt="Custom interior design"
+                  src={tvCabinetDesigns[20]}
+                  alt="Custom interior design by FINETEX INTERIORS"
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"
@@ -273,13 +276,13 @@ export default function DesignsPage() {
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                   <Link
                     href="/estimate"
-                    className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold transition hover:bg-[#d0a76a]"
+                    className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
                   >
                     Start My Design
                   </Link>
 
                   <a
-                    href="https://wa.me/254768176570"
+                    href="https://wa.me/254725408173"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold transition hover:bg-white hover:text-[#171717]"

@@ -1,12 +1,40 @@
+
 "use client";
 
-import { Menu, Search, Bell } from "lucide-react";
+import { useState } from "react";
+import {
+  Bell,
+  LogOut,
+  Menu,
+  Search,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type TopbarProps = {
   onMenuClick?: () => void;
 };
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Sign out error:", error);
+      setLoggingOut(false);
+      return;
+    }
+
+    window.location.href = "/admin/login";
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[#e7e2d9] bg-white/95 px-5 backdrop-blur-sm sm:px-8">
       {/* Mobile menu */}
@@ -67,6 +95,22 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             F
           </div>
         </div>
+
+        {/* Sign out */}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={loggingOut}
+          aria-label="Sign out"
+          title={loggingOut ? "Signing out..." : "Sign out"}
+          className="flex items-center gap-2 rounded-xl border border-[#e2ddd4] px-3 py-2.5 text-sm font-medium text-[#555] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <LogOut size={18} />
+
+          <span className="hidden sm:inline">
+            {loggingOut ? "Signing out..." : "Sign Out"}
+          </span>
+        </button>
       </div>
     </header>
   );

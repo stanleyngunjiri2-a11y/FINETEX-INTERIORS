@@ -49,7 +49,7 @@ export default function ContactPage() {
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
                 <a
-                  href="https://wa.me/254768176570"
+                  href="https://wa.me/254725408173"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
@@ -76,7 +76,7 @@ export default function ContactPage() {
             <div className="grid gap-8 md:grid-cols-2">
               {/* Phone */}
               <a
-                href="tel:+254768176570"
+                href="tel:+254725408173"
                 className="group rounded-3xl border border-[#ddd8ce] bg-white p-8 transition duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1eadf] text-[#b18a5a]">
@@ -110,7 +110,7 @@ export default function ContactPage() {
 
               {/* WhatsApp */}
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group rounded-3xl border border-[#ddd8ce] bg-white p-8 transition duration-300 hover:-translate-y-1 hover:shadow-xl"
@@ -182,7 +182,7 @@ export default function ContactPage() {
                   </p>
 
                   <a
-                    href="https://wa.me/254768176570"
+                    href="https://wa.me/254725408173"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-5 inline-flex rounded-full bg-[#171717] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#b18a5a]"
@@ -322,7 +322,7 @@ export default function ContactPage() {
               </Link>
 
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white hover:text-[#171717]"

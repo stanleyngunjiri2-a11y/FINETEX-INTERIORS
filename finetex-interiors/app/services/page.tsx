@@ -43,7 +43,7 @@ const services = [
       "Lighting integration",
       "Modern finishes",
     ],
-    designLink: "/designs/gypsum",
+   designLink: "/designs/gypsum-ceilings",
   },
   {
     number: "04",
@@ -311,7 +311,7 @@ export default function ServicesPage() {
 
               {/* WHATSAPP */}
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-[#cfc8bc] bg-white px-7 py-3.5 text-sm font-semibold !text-[#171717] transition-all duration-200 hover:border-[#171717] hover:bg-[#171717] hover:!text-white"

@@ -106,7 +106,7 @@ export default function Footer() {
 
               {/* WhatsApp */}
               <a
-                href="https://wa.me/254768176570"
+                href="https://wa.me/254725408173"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Contact FINETEX INTERIORS on WhatsApp"
@@ -199,14 +199,14 @@ export default function Footer() {
 
             <div className="mt-5 space-y-4">
               <a
-                href="tel:+254768176570"
+                href="tel:+254725408173"
                 className="flex items-start gap-3 text-sm text-white/55 transition hover:text-white"
               >
                 <Phone
                   size={18}
                   className="mt-0.5 shrink-0 text-[#b18a5a]"
                 />
-                <span>+254 768 176 570</span>
+                <span>+254 725 408 173</span>
               </a>
 
               <div className="flex items-start gap-3 text-sm text-white/55">

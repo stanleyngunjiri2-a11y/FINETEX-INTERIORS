@@ -1,262 +1,324 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+
 import {
-  ArrowRight,
-  Check,
-  Compass,
-  Layers3,
-  Sparkles,
-} from "lucide-react";
+  kitchenDesigns,
+  bathroomDesigns,
+  gypsumDesigns,
+  tvCabinetDesigns,
+  wardrobeDesigns,
+} from "@/lib/designs";
 
-const values = [
+const categories = [
+  "All",
+  "Kitchens",
+  "Bathrooms",
+  "Gypsum Ceilings",
+  "TV Cabinets",
+  "Wardrobes",
+];
+
+const designCategories = [
   {
-    icon: <Compass size={22} strokeWidth={1.7} />,
-    title: "Thoughtful Design",
+    title: "Kitchen Designs",
+    category: "Kitchens",
     description:
-      "We consider how a space looks, feels, and functions before bringing the design to life.",
+      "Explore modern kitchen layouts, cabinetry, finishes, islands, and practical storage ideas.",
+    image: kitchenDesigns[0],
+    href: "/designs/kitchens",
   },
   {
-    icon: <Layers3 size={22} strokeWidth={1.7} />,
-    title: "Quality Workmanship",
+    title: "Bathroom Designs",
+    category: "Bathrooms",
     description:
-      "We pay attention to details, finishes, measurements, and installation that make a project complete.",
+      "Discover contemporary bathroom styles, finishes, layouts, and elegant interior ideas.",
+    image: bathroomDesigns[0],
+    href: "/designs/bathrooms",
   },
   {
-    icon: <Sparkles size={22} strokeWidth={1.7} />,
-    title: "Beautiful Results",
+    title: "Gypsum Ceiling Designs",
+    category: "Gypsum Ceilings",
     description:
-      "Our goal is to create interiors that feel refined, practical, comfortable, and built around you.",
+      "Explore decorative ceiling concepts, modern lighting ideas, and elegant gypsum finishes.",
+    image: gypsumDesigns[0],
+    href: "/designs/gypsum-ceilings",
+  },
+  {
+    title: "TV Cabinet Designs",
+    category: "TV Cabinets",
+    description:
+      "Browse modern TV walls, entertainment units, custom cabinetry, and storage solutions.",
+    image: tvCabinetDesigns[0],
+    href: "/designs/tv-cabinets",
+  },
+  {
+    title: "Wardrobe Designs",
+    category: "Wardrobes",
+    description:
+      "Explore built-in wardrobes, modern storage solutions, and bedroom cabinetry ideas.",
+    image: wardrobeDesigns[0],
+    href: "/designs/wardrobes",
   },
 ];
 
-const reasons = [
-  "Personalized interior solutions",
-  "Quality materials and finishes",
-  "Attention to detail",
-  "Practical and functional designs",
-  "Professional workmanship",
-  "Clear communication throughout the project",
-];
+export default function DesignsPage() {
+  const [activeCategory, setActiveCategory] = useState("All");
 
-export default function AboutPage() {
+  const filteredCategories =
+    activeCategory === "All"
+      ? designCategories
+      : designCategories.filter(
+          (design) => design.category === activeCategory
+        );
+
   return (
     <>
       <Header />
 
       <main>
-        {/* Hero */}
-        <section className="relative flex min-h-[65vh] items-center overflow-hidden bg-[#171717] text-white">
+        {/* =====================================================
+            HERO
+        ====================================================== */}
+        <section className="relative flex min-h-[75vh] items-center overflow-hidden bg-[#171717] text-white">
           <Image
-            src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=2000&q=85"
-            alt="Elegant modern interior designed by FINETEX INTERIORS"
+            src={kitchenDesigns[0]}
+            alt="FINETEX INTERIORS interior design"
             fill
             priority
             sizes="100vw"
             className="object-cover"
           />
 
-          <div className="absolute inset-0 bg-black/65" />
+          <div className="absolute inset-0 bg-black/60" />
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/20" />
 
-          <div className="container relative z-10 py-24 sm:py-32 lg:py-36">
-            <div className="max-w-4xl">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-10 bg-[#b18a5a]" />
+          <div className="container relative z-10 py-28">
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#d0a76a]">
+                Design Inspiration
+              </p>
 
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#d0a76a]">
-                  About FINETEX
-                </p>
-              </div>
-
-              <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
-                Creating spaces that feel{" "}
-                <span className="text-[#d0a76a]">like home.</span>
+              <h1 className="mt-6 text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+                Imagine your space. We&apos;ll help bring it to life.
               </h1>
 
               <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
-                FINETEX INTERIORS helps homeowners transform their spaces
-                through thoughtful renovation, custom cabinetry, and practical
-                interior solutions.
+                Explore different interior design possibilities and find
+                inspiration for your next renovation with FINETEX INTERIORS.
               </p>
 
               <div className="mt-9 flex flex-col gap-4 sm:flex-row">
                 <Link
-                  href="/services"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
+                  href="/estimate"
+                  className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
                 >
-                  Explore Our Services
-                  <ArrowRight size={17} />
+                  Estimate My Project
                 </Link>
 
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center rounded-full border border-white/35 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white hover:text-[#171717]"
+                <a
+                  href="https://wa.me/254725408173"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold transition hover:bg-white hover:text-[#171717]"
                 >
-                  Contact Us
-                </Link>
+                  Discuss Your Design
+                </a>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Who We Are */}
-        <section className="section bg-white">
+        {/* =====================================================
+            INTRODUCTION
+        ====================================================== */}
+        <section className="bg-white py-20 sm:py-24">
           <div className="container">
-            <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#b18a5a]">
-                  Who We Are
+                  Our Design Ideas
                 </p>
 
-                <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Interiors designed around real life.
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+                  Find a style that feels like home.
                 </h2>
               </div>
 
-              <div className="max-w-3xl">
-                <p className="text-lg leading-8 text-[#333333]">
-                  FINETEX INTERIORS is an interior renovation and custom
-                  cabinetry company focused on helping homeowners create
-                  spaces that are both beautiful and practical.
-                </p>
-
-                <p className="mt-6 leading-8 text-[#6b6b6b]">
-                  We work across different areas of the home, including
-                  kitchens, bathrooms, wardrobes, TV cabinets, gypsum
-                  ceilings, and custom storage solutions. Every project starts
-                  with understanding the space and what the client wants to
-                  achieve.
-                </p>
-
-                <p className="mt-6 leading-8 text-[#6b6b6b]">
-                  Our approach is simple: thoughtful planning, quality
-                  materials, careful workmanship, and attention to the details
-                  that make an interior feel complete.
-                </p>
-              </div>
+              <p className="max-w-2xl leading-8 text-[#6b6b6b]">
+                Browse our interior design categories for inspiration. From
+                kitchens and bathrooms to wardrobes, TV cabinets, and gypsum
+                ceilings, discover ideas that can help shape your next project.
+              </p>
             </div>
           </div>
         </section>
 
-        {/* Our Approach */}
-        <section className="section bg-[#f7f5f0]">
+        {/* =====================================================
+            CATEGORY FILTERS
+        ====================================================== */}
+        <section className="bg-[#f7f5f0] py-8">
           <div className="container">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#b18a5a]">
-                Our Approach
-              </p>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {categories.map((category) => {
+                const isActive = activeCategory === category;
 
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Simple ideas. Thoughtful execution.
-              </h2>
-
-              <p className="mt-5 leading-8 text-[#6b6b6b]">
-                We believe a successful renovation doesn't have to be
-                complicated. Good planning and attention to detail can make
-                all the difference.
-              </p>
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setActiveCategory(category)}
+                    className={`whitespace-nowrap rounded-full px-6 py-3 text-sm font-medium transition ${
+                      isActive
+                        ? "bg-[#171717] text-white"
+                        : "border border-[#d8d1c6] bg-white text-[#555] hover:border-[#b18a5a] hover:text-[#b18a5a]"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+        </section>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {values.map((value) => (
-                <article
-                  key={value.title}
-                  className="rounded-3xl border border-[#ddd8ce] bg-white p-8 transition duration-300 hover:-translate-y-1 hover:border-[#b18a5a]/40 hover:shadow-lg"
+        {/* =====================================================
+            DESIGN CATEGORIES
+        ====================================================== */}
+        <section className="bg-[#f7f5f0] pb-24 sm:pb-32">
+          <div className="container">
+            <div className="grid gap-7 md:grid-cols-2">
+              {filteredCategories.map((design) => (
+                <Link
+                  key={design.category}
+                  href={design.href}
+                  className="group block overflow-hidden rounded-[2rem] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1eadf] text-[#b18a5a]">
-                    {value.icon}
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#171717]">
+                    <Image
+                      src={design.image}
+                      alt={`${design.title} - FINETEX INTERIORS`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition duration-700 group-hover:scale-105"
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+
+                    <div className="absolute bottom-0 left-0 p-7 sm:p-8">
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d0a76a]">
+                        {design.category}
+                      </p>
+
+                      <h3 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                        {design.title}
+                      </h3>
+                    </div>
                   </div>
 
-                  <h3 className="mt-6 text-xl font-semibold">
-                    {value.title}
-                  </h3>
+                  {/* Card Content */}
+                  <div className="p-7 sm:p-8">
+                    <p className="leading-7 text-[#6b6b6b]">
+                      {design.description}
+                    </p>
 
-                  <p className="mt-3 leading-7 text-[#6b6b6b]">
-                    {value.description}
-                  </p>
-                </article>
+                    <span className="mt-5 inline-flex text-sm font-semibold text-[#b18a5a] transition group-hover:text-[#171717]">
+                      Explore designs →
+                    </span>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Why Choose Us */}
-        <section className="section bg-white">
-          <div className="container">
-            <div className="rounded-3xl bg-[#171717] px-7 py-12 text-white sm:px-12 sm:py-16">
-              <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#b18a5a]">
-                    Why Choose FINETEX
-                  </p>
+        {/* =====================================================
+            CUSTOM DESIGN
+        ====================================================== */}
+        <section className="relative overflow-hidden bg-[#171717] text-white">
+          <div className="container py-24 sm:py-32">
+            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem]">
+                <Image
+                  src={tvCabinetDesigns[20]}
+                  alt="Custom interior design by FINETEX INTERIORS"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
 
-                  <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-                    We care about the details.
-                  </h2>
+                <div className="absolute inset-0 bg-black/20" />
+              </div>
 
-                  <p className="mt-5 max-w-xl leading-8 text-white/65">
-                    From the first conversation to the final finishing touch,
-                    our focus is on creating an interior that works for your
-                    space and reflects your vision.
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#b18a5a]">
+                  Custom Designs
+                </p>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {reasons.map((reason) => (
-                    <div
-                      key={reason}
-                      className="flex items-center gap-3 border-b border-white/10 pb-4"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#b18a5a]/15 text-[#b18a5a]">
-                        <Check size={15} strokeWidth={2.5} />
-                      </span>
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-5xl">
+                  Your home doesn&apos;t have to look like everyone else&apos;s.
+                </h2>
 
-                      <span className="text-sm font-medium text-white/85">
-                        {reason}
-                      </span>
-                    </div>
-                  ))}
+                <p className="mt-6 max-w-xl leading-8 text-white/65">
+                  Have something specific in mind? Share your ideas, reference
+                  images, preferred materials, colours, and measurements with
+                  us. We can work with you to develop an interior solution
+                  around your needs.
+                </p>
+
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  <Link
+                    href="/estimate"
+                    className="inline-flex items-center justify-center rounded-full bg-[#b18a5a] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#d0a76a]"
+                  >
+                    Start My Design
+                  </Link>
+
+                  <a
+                    href="https://wa.me/254725408173"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold transition hover:bg-white hover:text-[#171717]"
+                  >
+                    WhatsApp Us
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="section bg-[#f7f5f0]">
-          <div className="container text-center">
+        {/* =====================================================
+            FINAL CTA
+        ====================================================== */}
+        <section className="bg-white">
+          <div className="container py-24 text-center sm:py-32">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#b18a5a]">
-              Let's Work Together
+              Ready To Renovate?
             </p>
 
             <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl">
-              Your space deserves a thoughtful transformation.
+              A better interior starts with a good plan.
             </h2>
 
             <p className="mx-auto mt-5 max-w-2xl leading-8 text-[#6b6b6b]">
-              Whether you are planning a complete renovation or need a custom
-              interior solution, we'd love to hear about your project.
+              Tell us what you want to transform and let FINETEX INTERIORS
+              help you plan the next step.
             </p>
 
-            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Link
-                href="/estimate"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#171717] px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-[#b18a5a]"
-              >
-                Get an Estimate
-                <ArrowRight size={17} />
-              </Link>
-
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-full border border-[#cfc8bc] px-7 py-3.5 text-sm font-semibold text-[#171717] transition hover:border-[#171717] hover:bg-[#171717] hover:text-white"
-              >
-                Contact Us
-              </Link>
-            </div>
+            <Link
+              href="/estimate"
+              className="mt-8 inline-flex rounded-full bg-[#171717] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#b18a5a]"
+            >
+              Get Your Estimate
+            </Link>
           </div>
         </section>
       </main>
