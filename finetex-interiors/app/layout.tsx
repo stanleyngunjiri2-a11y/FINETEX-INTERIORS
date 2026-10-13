@@ -1,5 +1,7 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
+import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://finetexinteriors.com"),
@@ -173,7 +175,10 @@ export default function RootLayout({
         />
       </head>
 
-      <body>{children}</body>
+      <body>
+        <ServiceWorkerRegistration />
+        {children}
+      </body>
     </html>
   );
 }

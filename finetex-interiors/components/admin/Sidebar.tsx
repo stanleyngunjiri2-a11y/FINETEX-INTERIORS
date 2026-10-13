@@ -190,13 +190,13 @@ export default function Sidebar({
 
         {/* Bottom actions */}
         <div className="border-t border-[#e7e2d9] p-4">
-          <Link
-            href="/"
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#666] transition hover:bg-[#f7f5f0] hover:text-[#171717]"
-          >
-            <Home size={18} strokeWidth={1.7} />
-            View Website
-          </Link>
+          <a
+  href="/"
+  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[#666] transition hover:bg-[#f7f5f0] hover:text-[#171717]"
+>
+  <Home size={18} strokeWidth={1.7} />
+  View Website
+</a>
 
           <button
             type="button"

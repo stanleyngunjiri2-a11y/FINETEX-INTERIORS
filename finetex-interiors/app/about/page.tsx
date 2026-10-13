@@ -62,7 +62,7 @@ export default function AboutPage() {
         {/* HERO */}
         <section className="relative flex min-h-[65vh] items-center overflow-hidden bg-[#171717] text-white">
           <Image
-            src="/images/gallery/kitchens/IMG-20260921-WA0001.jpg"
+            src="/images/gallery/kitchens/FB_IMG_1789927717078.jpg"
             alt="FINETEX INTERIORS interior project"
             fill
             priority

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -5,6 +6,8 @@ import Link from "next/link";
 import { Menu, Phone, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import InstallPWA from "@/components/pwa/InstallPWA";
+import AdminDashboardLink from "@/components/admin/AdminDashboardLink";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -32,7 +35,6 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-[#e5e0d8] bg-white">
       <div className="container">
         <div className="flex min-h-[80px] items-center justify-between gap-6">
-
           {/* =====================================================
               LOGO
           ====================================================== */}
@@ -69,12 +71,13 @@ export default function Header() {
                   className="relative rounded-full px-4 py-3 text-sm font-medium transition-all duration-200"
                   style={{
                     color: active ? "#a47d4d" : "#333333",
-                    backgroundColor: active ? "#f1eadf" : "transparent",
+                    backgroundColor: active
+                      ? "#f1eadf"
+                      : "transparent",
                   }}
                 >
                   {item.name}
 
-                  {/* Active indicator */}
                   {active && (
                     <span
                       className="absolute bottom-1 left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-full"
@@ -87,6 +90,14 @@ export default function Header() {
               );
             })}
           </nav>
+
+          {/* =====================================================
+              DESKTOP PWA INSTALL
+          ====================================================== */}
+          <div className="hidden items-center gap-2 lg:flex">
+            <InstallPWA />
+            <AdminDashboardLink />
+          </div>
 
           {/* =====================================================
               PHONE
@@ -153,7 +164,9 @@ export default function Header() {
                         backgroundColor: active
                           ? "#f1eadf"
                           : "transparent",
-                        color: active ? "#a47d4d" : "#333333",
+                        color: active
+                          ? "#a47d4d"
+                          : "#333333",
                       }}
                     >
                       {item.name}
@@ -164,11 +177,18 @@ export default function Header() {
             </nav>
 
             {/* =================================================
+                MOBILE PWA INSTALL
+            ================================================== */}
+            <div className="mt-4">
+              <InstallPWA />
+            </div>
+
+            {/* =================================================
                 MOBILE PHONE
             ================================================== */}
             <a
               href="tel:+254725408173"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold"
+              className="mt-3 flex items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold"
               style={{
                 backgroundColor: "#171717",
                 color: "#ffffff",

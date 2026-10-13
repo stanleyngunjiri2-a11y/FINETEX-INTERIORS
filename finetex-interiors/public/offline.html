@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta name="theme-color" content="#b18a5a" />
+    <title>FINETEX INTERIORS</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #f7f5f0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        color: #222;
+      }
+
+      .container {
+        max-width: 500px;
+      }
+
+      img {
+        width: 140px;
+        max-width: 60%;
+        height: auto;
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        margin-bottom: 12px;
+        font-size: 28px;
+      }
+
+      p {
+        line-height: 1.6;
+        color: #666;
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 12px 24px;
+        border: 0;
+        border-radius: 6px;
+        background: #b18a5a;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="container">
+      <img
+        src="/images/finetex-logo.png"
+        alt="FINETEX INTERIORS"
+      />
+
+      <h1>You are offline</h1>
+
+      <p>
+        Please check your internet connection and try again.
+        FINETEX INTERIORS will be available when you are back online.
+      </p>
+
+      <button onclick="location.reload()">
+        Try Again
+      </button>
+    </main>
+  </body>
+</html>
