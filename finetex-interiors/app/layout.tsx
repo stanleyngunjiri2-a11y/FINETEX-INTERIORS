@@ -1,7 +1,7 @@
-
 import type { Metadata } from "next";
 import "./globals.css";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
+import LegalAgreementModal from "@/components/legal/LegalAgreementModal";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://finetexinteriors.com"),
@@ -57,11 +57,8 @@ export const metadata: Metadata = {
       "Professional interior design and renovation services in Nairobi, including kitchens, bathrooms, wardrobes, TV cabinets, gypsum ceilings, and custom interiors.",
 
     type: "website",
-
     siteName: "FINETEX INTERIORS",
-
     locale: "en_KE",
-
     url: "https://finetexinteriors.com",
 
     images: [
@@ -177,7 +174,10 @@ export default function RootLayout({
 
       <body>
         <ServiceWorkerRegistration />
+
         {children}
+
+        <LegalAgreementModal />
       </body>
     </html>
   );
