@@ -12,6 +12,11 @@ export const metadata: Metadata = {
     template: "%s | FINETEX INTERIORS",
   },
 
+
+verification: {
+  google: "Ay9knnbwIDF44uiplWmzbaVHNZvootYUXDi-GwICd9I",
+},
+
   description:
     "FINETEX INTERIORS provides professional interior design and renovation services in Nairobi and surrounding areas, including kitchens, bathrooms, wardrobes, TV cabinets, gypsum ceilings, and custom interiors.",
 
